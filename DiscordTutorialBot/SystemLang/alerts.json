@@ -1,0 +1,5 @@
+{
+  "TEST": "Hello World!",
+  "WELCOME_&NAME": "Hello, {0}. My name is Mercy! How may I help you?",
+  "SECRET": "The secret is `123ABC`."
+}
