@@ -14,6 +14,10 @@ namespace DiscordTutorialBot.Core.UserAccounts
 
         public uint XP { get; set; }
 
+        public ulong Money { get; set; }
+
+        public DateTime LastDaily { get; set; } = DateTime.UtcNow.AddDays(-2);
+
         public uint LevelNumber
         {
             get

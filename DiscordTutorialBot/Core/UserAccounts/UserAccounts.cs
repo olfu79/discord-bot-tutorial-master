@@ -1,4 +1,5 @@
 ﻿using Discord.WebSocket;
+using Discord;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -31,7 +32,7 @@ namespace DiscordTutorialBot.Core.UserAccounts
             DataStorage.SaveUserAccounts(accounts, accountsFile);
         }
 
-        public static UserAccount GetAccount(SocketUser user)
+        public static UserAccount GetAccount(IUser user)
         {
             return GetOrCreateAccount(user.Id);
         }
@@ -53,7 +54,8 @@ namespace DiscordTutorialBot.Core.UserAccounts
             {
                 ID = id,
                 Points = 10,
-                XP = 0
+                XP = 0,
+                Money = 100
             };
 
             accounts.Add(newAccount);

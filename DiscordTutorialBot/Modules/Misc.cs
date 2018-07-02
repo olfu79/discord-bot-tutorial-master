@@ -4,15 +4,18 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Net;
 
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
-using DiscordTutorialBot.Core.UserAccounts;
-using NReco.ImageGenerator;
-using System.Net;
-using Newtonsoft.Json;
 using Discord.Rest;
+
+using DiscordTutorialBot.Core.UserAccounts;
+
+using NReco.ImageGenerator;
+using Newtonsoft.Json;
+
 
 namespace DiscordTutorialBot.Modules
 {
@@ -251,72 +254,37 @@ namespace DiscordTutorialBot.Modules
                 await ReplyAsync("", false, ebm.Build());
             }
         }
-        // embed.
-        [Command("Jaki lvl to")]
-        public async Task WhatLevelIs(uint xp)
+
+        [Command("react")]
+        public async Task HandleReactionMessage()
         {
-            uint level = (uint)Math.Sqrt(xp / 50);
-            await Context.Channel.SendMessageAsync("The level is " + level);
+            RestUserMessage msg = await Context.Channel.SendMessageAsync("React to me!");
+            Global.MessageIdToTrack = msg.Id;
+            var cs = Emote.Parse("<:CSGO2:460770281020063746>");
+            var lol = Emote.Parse("<:LeageOfLegends:460770233326501898>");
+            var pubg = Emote.Parse("<:pubg:460770295620304916>");
+            var fortn = Emote.Parse("<:fortnite:460770233574227969>");
+            var ov = Emote.Parse("<:overwatch:460770233297141771>");
+            var roblx = Emote.Parse("<:roblox:460770244605116426>");
+            var gta = Emote.Parse("<:gta:461586476182798336>");
+            var mc = Emote.Parse("<:minecraft:461586466263531520>");
+            var sims = Emote.Parse("<:Sims:461586518214180864>");
+            var rocklg = Emote.Parse("<:Rocketleague:461586464787136512>");
+            var unturned = Emote.Parse("<:Unturned:461586456419368970>");
+            await msg.AddReactionAsync(cs);
+            await msg.AddReactionAsync(lol);
+            await msg.AddReactionAsync(fortn);
+            await msg.AddReactionAsync(roblx);
+            await msg.AddReactionAsync(pubg);
+            await msg.AddReactionAsync(ov);
+            await msg.AddReactionAsync(gta);
+            await msg.AddReactionAsync(mc);
+            await msg.AddReactionAsync(sims);
+            await msg.AddReactionAsync(rocklg);
+            await msg.AddReactionAsync(unturned);
         }
 
-        //[Command("react")]
-        //public async Task HandleReactionMessage()
-        //{
-        //    RestUserMessage msg = await Context.Channel.SendMessageAsync("React to me!");
-        //    Global.MessageIdToTrack = msg.Id;
-        //}
-        //
-        //[Command("person")]
-        //public async Task GetRandomPerson()
-        //{
-        //    string json = "";
-        //    using (WebClient client = new WebClient())
-        //    {
-        //        json = client.DownloadString("https://randomuser.me/api/?gender=female&nat=US");    
-        //    }
-        //
-        //    var dataObject = JsonConvert.DeserializeObject<dynamic>(json);
-        //
-        //    string firstName = dataObject.results[0].name.first.ToString();
-        //    string lastName = dataObject.results[0].name.last.ToString();
-        //    string avatarURL = dataObject.results[0].picture.large.ToString();
-        //
-        //    var embed = new EmbedBuilder();
-        //    embed.WithThumbnailUrl(avatarURL);
-        //    embed.WithTitle("Generated Person");
-        //    embed.AddInlineField("First Name", firstName);
-        //    embed.AddInlineField("Last Name", lastName);
-        //
-        //    await Context.Channel.SendMessageAsync("", embed: embed);
-        //}
-        
-        //do renowacji lets say
-        [Command("hello")]
-        public async Task Hello(string color = "red")
-        {
-            string css = "<style>\n    h1{\n        background-color: " + color + ";\n    }\n</style>\n";
-            string html = String.Format("<h1>Hello {0}!</h1>", Context.User.Username);
-            var converter = new HtmlToImageConverter
-            {
-                Width = 250,
-                Height = 70
-            };
-            var jpgBytes = converter.GenerateImage(css + html, NReco.ImageGenerator.ImageFormat.Jpeg);
-            await Context.Channel.SendFileAsync(new MemoryStream(jpgBytes), "hello.jpg");
-        }
-        //do dopracowania żeby pokazywało embeda.
-        [Command("myStats")]
-        public async Task MyStats([Remainder]string arg = "")
-        {
-            SocketUser target = null;
-            var mentionedUser = Context.Message.MentionedUsers.FirstOrDefault();
-            target = mentionedUser ?? Context.User;
-            
-            var account = UserAccounts.GetAccount(target);
-            await Context.Channel.SendMessageAsync($"{target.Username} has {account.XP} XP and {account.Points} points.");
-        }
-
-        [Command("addXP")]
+        [Command("dodajXP")]
         [RequireUserPermission(GuildPermission.Administrator)]
         public async Task AddXP(uint xp)
         {
@@ -326,53 +294,57 @@ namespace DiscordTutorialBot.Modules
             await Context.Channel.SendMessageAsync($"You gained {xp} XP.");
         }
 
-        [Command("wybierz")]
-        public async Task PickOne([Remainder]string message)
+        [Command("botstatus")]
+        [Alias("ustawstatus")]
+        [Remarks("!botstatus [status]")]
+        [Summary("Pozwala na zmianę statusu bota na dowolny")]
+        [RequireUserPermission(GuildPermission.Administrator)]
+        public async Task SetBotStatus([Remainder] string botStatus = "")
         {
-            string[] options = message.Split(new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
+            await Context.Message.DeleteAsync();
 
-            Random r = new Random();
-            string selection = options[r.Next(0, options.Length)];
+            if(botStatus == "")
+            {
+                Context.Client.SetGameAsync("GGWP BOT");
+                return;
+            }
+
+            Context.Client.SetGameAsync(botStatus);
             
-            var embed = new EmbedBuilder();
-            embed.WithTitle("Choice for " + Context.User.Username);
-            embed.WithDescription(selection);
-            embed.WithColor(new Color(255, 255, 0));
-            embed.WithThumbnailUrl("https://orig00.deviantart.net/3033/f/2016/103/0/c/mercy_by_raichiyo33-d9yufl4.jpg");
-            
-            await Context.Channel.SendMessageAsync("", false, embed);
-            DataStorage.AddPairToStorage(Context.User.Username + DateTime.Now.ToLongDateString(), selection);
+            await Task.Delay(5000);
         }
 
-        //[Command("secret")]
-        //public async Task RevealSecret([Remainder]string arg = "")
-        //{
-        //    if (!UserIsSecretOwner((SocketGuildUser)Context.User))
-        //    {
-        //        await Context.Channel.SendMessageAsync(":x: You need the SecretOwner role to do that. " + Context.User.Mention);
-        //        return;
-        //    }
-        //    var dmChannel = await Context.User.GetOrCreateDMChannelAsync();
-        //    await dmChannel.SendMessageAsync(Utilities.GetAlert("SECRET"));
-        //}
-        //
-        //private bool UserIsSecretOwner(SocketGuildUser user)
-        //{
-        //    string targetRoleName = "SecretOwner";
-        //    var result = from r in user.Guild.Roles
-        //                 where r.Name == targetRoleName
-        //                 select r.Id;
-        //    ulong roleID = result.FirstOrDefault();
-        //    if (roleID == 0) return false;
-        //    var targetRole = user.Guild.GetRole(roleID);
-        //    return user.Roles.Contains(targetRole);
-        //}
-        //
-        //[Command("data")]
-        //public async Task GetData()
-        //{
-        //    await Context.Channel.SendMessageAsync("Data Has " + DataStorage.GetPairsCount() + " pairs.");
-        //}
+        [Command("secret")]
+        [RequireUserPermission(GuildPermission.Administrator)]
+        public async Task RevealSecret([Remainder]string arg = "")
+        {
+            if (!UserIsSecretOwner((SocketGuildUser)Context.User))
+            {
+                await Context.Channel.SendMessageAsync(":x: You need the SecretOwner role to do that. " + Context.User.Mention);
+                return;
+            }
+            var dmChannel = await Context.User.GetOrCreateDMChannelAsync();
+            await dmChannel.SendMessageAsync(Utilities.GetAlert("SECRET"));
+        }
+        
+        private bool UserIsSecretOwner(SocketGuildUser user)
+        {
+            string targetRoleName = "SecretOwner";
+            var result = from r in user.Guild.Roles
+                         where r.Name == targetRoleName
+                         select r.Id;
+            ulong roleID = result.FirstOrDefault();
+            if (roleID == 0) return false;
+            var targetRole = user.Guild.GetRole(roleID);
+            return user.Roles.Contains(targetRole);
+        }
+        
+        [Command("data")]
+        [RequireUserPermission(GuildPermission.Administrator)]
+        public async Task GetData()
+        {
+            await Context.Channel.SendMessageAsync("Data Has " + DataStorage.GetPairsCount() + " pairs.");
+        }
 
         [Command("ogloszenie")]
         [Alias("ogl")]
@@ -392,6 +364,25 @@ namespace DiscordTutorialBot.Modules
                 await ReplyAsync("@everyone " + time + "\n" + usr_msg);
                 await Task.Delay(0);
             }
+        }
+        [Command("purge")]
+        [Alias("czysc", "usun", "clear")]
+        [Remarks("!clear [num]")]
+        [Summary("Pozwala na wyczyszczenie danej ilości wiadomości.")]
+        [RequireUserPermission(GuildPermission.ManageMessages)]
+        public async Task ClearMessages([Remainder] int num = 0)
+        {
+            await Context.Message.DeleteAsync();
+
+            await ReplyAsync("***🗑️ Usuwam " + $"{num}" + " wiadomości... Proszę czekać.***");
+
+            var messages = await this.Context.Channel.GetMessagesAsync((int)num + 1).FlattenAsync();
+
+            var channel = Context.Message.Channel as SocketTextChannel;
+            await channel.DeleteMessagesAsync(messages);
+
+            const int delay = 5000;
+            await Task.Delay(delay);
         }
     }
 }

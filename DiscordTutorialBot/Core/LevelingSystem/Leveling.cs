@@ -29,10 +29,10 @@ namespace DiscordTutorialBot.Core.LevelingSystem
                 embed.WithColor(67, 160, 71);
                 embed.WithTitle("LEVEL UP!");
                 embed.WithDescription(user.Username + " just leveled up!");
-                embed.AddInlineField("LEVEL", newLevel);
-                embed.AddInlineField("XP", userAccount.XP);
+                embed.AddField("LEVEL", newLevel, true);
+                embed.AddField("XP", userAccount.XP, true);
 
-                await channel.SendMessageAsync("", embed: embed);
+                await channel.SendMessageAsync("", embed: embed.Build());
             }
         }
     }
